@@ -29,7 +29,7 @@ export const createDocumentMulterErrorHandler = (error, req, res, next) => {
 
   next(error);
 };
-
+//pdf upload 
 export const createDocumentController = async (req, res, next) => {
   try {
     if (!req.file) {
@@ -73,7 +73,7 @@ export const queryDocumentController = async (req, res, next) => {
       data: result,
     });
   } catch (error) {
-    // console.error("❌ QUERY ERROR:", error);
+    // console.error(" QUERY ERROR:", error);
     next(error);
   }
 };

@@ -69,6 +69,11 @@ export const embedQuery = async (text) => {
 
   return response.embeddings[0].values;
 };
+// pdrf upload
+// pdf parse
+//chunk
+//embed(gemni)
+//store vectors(documents table,document_chunks,document_chunk_vectors)
 
 export const createDocumentFromUploadService = async ({ userId, file }) => {
   const fileBuffer = await fs.readFile(file.path);
