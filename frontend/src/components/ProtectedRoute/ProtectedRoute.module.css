@@ -1,5 +1,5 @@
 /**
- * Full-screen loading state while AuthContext checks localStorage / session.
+ * Full-screen loading state while AuthContext checks session storage / session.
  * Keeps spinner styles out of JSX so students can tweak animation in one place.
  */
 

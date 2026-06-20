@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 /**
  * Configured axios instance for API communication.
@@ -18,14 +18,14 @@ const apiClient = axios.create({
  * Request interceptor to attach the JWT token to headers.
  */
 apiClient.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('token');
+  (config) => {
+    const token = sessionStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  error => {
+  (error) => {
     return Promise.reject(error);
   },
 );
@@ -34,22 +34,22 @@ apiClient.interceptors.request.use(
  * Response interceptor to handle global 401 unauthorized errors.
  */
 apiClient.interceptors.response.use(
-  response => {
+  (response) => {
     return response;
   },
-  error => {
+  (error) => {
     // Skip global 401 redirect for auth endpoints so components can handle login/register errors
     const isAuthEndpoint =
-      error.config?.url?.includes('/api/auth/login') ||
-      error.config?.url?.includes('/api/auth/register');
+      error.config?.url?.includes("/api/auth/login") ||
+      error.config?.url?.includes("/api/auth/register");
 
     if (error.response?.status === 401 && !isAuthEndpoint) {
       // Clear authentication data
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
 
       // Redirect to login page
-      window.location.href = '/auth';
+      window.location.href = "/auth";
     }
     return Promise.reject(error);
   },
