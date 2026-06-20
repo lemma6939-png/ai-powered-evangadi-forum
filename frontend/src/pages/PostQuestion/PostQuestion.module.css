@@ -1,0 +1,206 @@
+.page {
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  
+  .header {
+    margin-bottom: 18px;
+  }
+  
+  .header span {
+    color: #f97316;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  
+  .header h1 {
+    margin: 8px 0;
+    color: #111827;
+  }
+  
+  .header p {
+    color: #64748b;
+    max-width: 720px;
+  }
+  
+  .guide,
+  .card {
+    background: white;
+    border: 1px solid #e7ebf0;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 22px;
+  }
+  
+  .guide {
+    border-color: #fb923c;
+    background: #fff7ed;
+  }
+  
+  .guide h3 {
+    margin-top: 0;
+  }
+  
+  .guide p,
+  .field p {
+    color: #64748b;
+    margin: 6px 0 12px;
+  }
+  
+  .guideGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  
+  .guide ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #334155;
+    line-height: 1.7;
+  }
+  
+  .status {
+    padding: 13px 14px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-weight: 700;
+  }
+  
+  .error {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  
+  .success {
+    background: #dcfce7;
+    color: #15803d;
+  }
+  
+  .info {
+    background: #ffedd5;
+    color: #c2410c;
+  }
+  
+  .field {
+    margin-bottom: 22px;
+  }
+  
+  .field label {
+    font-weight: 800;
+    color: #111827;
+  }
+  
+  .field input,
+  .field textarea {
+    width: 100%;
+    border: 1px solid #d9dee7;
+    border-radius: 12px;
+    padding: 13px 14px;
+    font: inherit;
+    outline: none;
+  }
+  
+  .field textarea {
+    resize: vertical;
+    line-height: 1.6;
+  }
+  
+  .field input:focus,
+  .field textarea:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  }
+  
+  .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  
+  .row small {
+    color: #94a3b8;
+    white-space: nowrap;
+  }
+  
+  .tips {
+    background: #f8fafc;
+    border: 1px solid #e7ebf0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 18px;
+  }
+  
+  .tips h3 {
+    margin-top: 0;
+  }
+  
+  .tips ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #334155;
+    line-height: 1.7;
+  }
+  
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .footer button,
+  .submit,
+  .cancel {
+    border: none;
+    border-radius: 10px;
+    padding: 11px 16px;
+    cursor: pointer;
+    font-weight: 800;
+  }
+  
+  .footer > button {
+    background: #f1f5f9;
+    color: #334155;
+  }
+  
+  .rightActions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .cancel {
+    background: transparent;
+    color: #64748b;
+  }
+  
+  .submit {
+    background: #f97316;
+    color: white;
+  }
+  
+  .submit:disabled,
+  .footer button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 750px) {
+    .page {
+      padding: 16px;
+    }
+  
+    .guideGrid {
+      grid-template-columns: 1fr;
+    }
+  
+    .footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+  
+    .rightActions {
+      flex-direction: column;
+    }
+  }

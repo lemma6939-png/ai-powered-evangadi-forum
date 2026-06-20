@@ -1,0 +1,133 @@
+.page {
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  
+  .hero,
+  .content {
+    background: #ffffff;
+    border: 1px solid #e7ebf0;
+    border-radius: 16px;
+  }
+  
+  .hero {
+    padding: 24px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .hero span {
+    color: #f97316;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  
+  .hero h1 {
+    margin: 8px 0;
+    color: #111827;
+  }
+  
+  .hero p {
+    color: #6b7280;
+    margin: 0;
+    max-width: 650px;
+  }
+  
+  .newButton {
+    background: #f97316;
+    color: white;
+    padding: 11px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  
+  .content {
+    min-height: 180px;
+    padding: 22px;
+  }
+  
+  .loadingBox,
+  .emptyBox,
+  .errorBox {
+    width: fit-content;
+    margin: 34px auto;
+    padding: 34px 52px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  .loadingBox,
+  .emptyBox {
+    background: #f1f5f9;
+    color: #64748b;
+  }
+  
+  .errorBox {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  
+  .topicRow {
+    display: flex;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eef2f7;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .topicRow:last-child {
+    border-bottom: none;
+  }
+  
+  .accent {
+    width: 5px;
+    border-radius: 999px;
+    background: #22c55e;
+    flex-shrink: 0;
+  }
+  
+  .topicBody h3 {
+    margin: 0 0 6px;
+    color: #111827;
+  }
+  
+  .topicBody p {
+    margin: 0 0 8px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+  
+  .topicBody small {
+    color: #94a3b8;
+  }
+  
+  @media (max-width: 700px) {
+    .page {
+      padding: 16px;
+    }
+  
+    .hero {
+      flex-direction: column;
+    }
+  
+    .newButton {
+      width: 100%;
+      text-align: center;
+    }
+  
+    .loadingBox,
+    .emptyBox,
+    .errorBox {
+      width: auto;
+      padding: 26px 20px;
+    }
+  }

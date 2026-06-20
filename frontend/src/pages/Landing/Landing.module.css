@@ -1,0 +1,302 @@
+.page {
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.header {
+  height: 72px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo span {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #ff6b00;
+  color: white;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+
+.logo h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.logo p {
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.nav a {
+  color: #334155;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.headerBtn {
+  background: #ff6b00;
+  color: white !important;
+  padding: 10px 16px;
+  border-radius: 8px;
+}
+
+.hero {
+  background: white;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 74px 24px 68px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 60px;
+  align-items: center;
+}
+
+.badge,
+.sectionIntro p {
+  color: #ff6b00;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.heroText h1 {
+  font-size: 48px;
+  line-height: 1.08;
+  margin: 0 0 18px;
+  letter-spacing: -1px;
+}
+
+.heroText h1 span {
+  color: #ff6b00;
+}
+
+.heroText > p {
+  color: #475569;
+  line-height: 1.8;
+  font-size: 17px;
+  max-width: 640px;
+  margin-bottom: 26px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  text-decoration: none;
+  padding: 12px 18px;
+  border-radius: 7px;
+  font-weight: 800;
+}
+
+.primaryBtn {
+  background: #ff6b00;
+  color: white;
+}
+
+.secondaryBtn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+
+.aiCard {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.aiCard h4 {
+  margin: 0 0 16px;
+}
+
+.aiItem {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.aiItem:last-child {
+  border-bottom: none;
+}
+
+.aiItem span,
+.card span {
+  color: #ff6b00;
+  font-weight: 900;
+}
+
+.aiItem p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.band,
+.features,
+.how {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+
+.band {
+  background: #eef3f8;
+}
+
+.sectionIntro {
+  max-width: 720px;
+  margin-bottom: 30px;
+}
+
+.sectionIntro h2 {
+  font-size: 28px;
+  margin: 0 0 10px;
+}
+
+.sectionIntro span {
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.cardsThree,
+.featureGrid {
+  display: grid;
+  gap: 18px;
+}
+
+.cardsThree {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.featureGrid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.card,
+.featureCard,
+.workflow div,
+.cta {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.card h3,
+.featureCard h3 {
+  margin: 12px 0 8px;
+}
+
+.card p,
+.featureCard p,
+.workflow p,
+.cta p {
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.featureCard span {
+  font-size: 24px;
+}
+
+.workflow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.workflow b {
+  color: #0f172a;
+}
+
+.cta {
+  max-width: 1040px;
+  margin: 42px auto;
+  text-align: center;
+}
+
+.cta h2 {
+  margin-bottom: 8px;
+}
+
+.cta a {
+  display: inline-block;
+  margin-top: 14px;
+  background: #ff6b00;
+  color: white;
+  text-decoration: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+.footer {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  display: flex;
+  justify-content: space-between;
+  color: #64748b;
+  background: white;
+}
+
+.footer h3 {
+  margin: 0 0 4px;
+  color: #0f172a;
+}
+
+.footer p {
+  margin: 0;
+}
+
+.footer a {
+  color: #64748b;
+  text-decoration: none;
+  margin-left: 18px;
+}
+
+@media (max-width: 850px) {
+  .nav {
+    display: none;
+  }
+
+  .hero,
+  .cardsThree,
+  .featureGrid,
+  .workflow {
+    grid-template-columns: 1fr;
+  }
+
+  .heroText h1 {
+    font-size: 36px;
+  }
+}
