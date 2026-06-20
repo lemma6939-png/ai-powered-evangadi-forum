@@ -354,10 +354,6 @@ Answer:
 };
 
 
-export const getDocumentFileService = async (documentId, userId) => {
-  const doc = await assertOwnedDocument(documentId, userId);
-  return doc.storage_path;
-};
 export const deleteDocumentService = async (documentId, userId) => {
   const doc = await assertOwnedDocument(documentId, userId);
 
@@ -370,7 +366,8 @@ export const deleteDocumentService = async (documentId, userId) => {
   await safeExecute("DELETE FROM documents WHERE document_id = ?", [//deleting uploded file from db
     documentId,
   ]);
-    return { id: documentId };
+
+  return { id: documentId };
 };
 
 export const getDocumentMetaService = async (documentId, userId) => {
