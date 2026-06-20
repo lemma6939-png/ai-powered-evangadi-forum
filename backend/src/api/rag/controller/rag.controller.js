@@ -11,7 +11,7 @@ import {
   getDocumentMetaService,
   assertOwnedDocument,
   listDocumentsService,
-  deleteDocumentService,
+  deleteDocumentService,//deleting functionality
 } from "../service/rag.service.js";
 
 export const createDocumentMulterErrorHandler = (error, req, res, next) => {
@@ -132,7 +132,7 @@ export const getDocumentMetaController = async (req, res, next) => {
 };
 
 
-export const deleteDocumentController = async (req, res, next) => {
+export const deleteDocumentController = async (req, res, next) => { //deleting uploded file
   try {
     const userId = req.user.id;
     const { documentId } = req.params;
