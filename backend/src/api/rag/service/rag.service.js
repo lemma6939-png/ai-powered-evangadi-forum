@@ -225,6 +225,11 @@ export const createDocumentFromUploadService = async ({ userId, file }) => {
     }
   }
 };
+/**
+
+* Semantic search over document chunks using cosine similarity.
+* Returns top-k most relevant chunks for a given query.
+  */
 
 export const searchInDocumentService = async (
   documentId,
@@ -262,6 +267,12 @@ export const searchInDocumentService = async (
   };
 };
 
+/**
+
+* Runs a RAG query over a document.
+* Finds relevant chunks via embeddings, builds a prompt,
+* and generates an answer using the LLM constrained to context.
+  */
 
 export const queryDocumentService = async (
   documentId,
@@ -291,19 +302,19 @@ export const queryDocumentService = async (
   );
 
   // Calculate similarity scores
-const scored = rows.map((r) => {
-  // console.log("Embedding type:", typeof r.embedding);
+  const scored = rows.map((r) => {
+    // console.log("Embedding type:", typeof r.embedding);
 
-  const vec =
-    typeof r.embedding === "string" ? JSON.parse(r.embedding) : r.embedding;
+    const vec =
+      typeof r.embedding === "string" ? JSON.parse(r.embedding) : r.embedding;
 
-  return {
-    chunkId: r.chunk_id,
-    chunkIndex: r.chunk_index,
-    excerpt: r.content,
-    score: cosineSimilarity(queryVector, vec),
-  };
-});
+    return {
+      chunkId: r.chunk_id,
+      chunkIndex: r.chunk_index,
+      excerpt: r.content,
+      score: cosineSimilarity(queryVector, vec),
+    };
+  });
 
   // Get top matching chunks
   const top = scored.sort((a, b) => b.score - a.score).slice(0, k);
@@ -361,7 +372,7 @@ export const deleteDocumentService = async (documentId, userId) => {
 
   try {
     await fs.unlink(filePath);
-  } catch {}
+  } catch { }
 
   await safeExecute("DELETE FROM documents WHERE document_id = ?", [//deleting uploded file from db
     documentId,
