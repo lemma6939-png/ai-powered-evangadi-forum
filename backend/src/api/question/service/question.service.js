@@ -197,16 +197,16 @@ export const getQuestionsService = async (filters = {}) => {
   // Add limit and offset after dynamic params.
   // const result = await safeExecute(listSql, [...params,string( limit),string( offset)]);
   // const rows = unwrapRows(result);
-  // const result = await safeExecute(listSql, [
-  //   ...params,
-  //   String(limit),
-  //   String(offset),
-  // ]);
   const result = await safeExecute(listSql, [
-  ...params, 
-  limit, 
-  offset
-]);
+    ...params,
+    String(limit),
+    String(offset),
+  ]);
+  //   const result = await safeExecute(listSql, [
+  //   ...params,
+  //   limit,
+  //   offset
+  // ]);
   const rows = unwrapRows(result);
 
   // Count total matching questions for the requested filters.
@@ -272,10 +272,9 @@ export const getSingleQuestionService = async ({ questionHash }) => {
     GROUP BY q.question_id, u.user_id
   `;
 
-  // const questionResult = await safeExecute(questionSql,[questionHash]);
-  // const questionRows = unwrapRows(questionResult);
-  const questionResult = await safeExecute(questionSql, [String(questionHash)]);
+  const questionResult = await safeExecute(questionSql, [questionHash]);
   const questionRows = unwrapRows(questionResult);
+
   // If no question found, throw 404 error.
   if (!questionRows.length) {
     throw new NotFoundError("Question not found");
@@ -300,13 +299,14 @@ export const getSingleQuestionService = async ({ questionHash }) => {
     LIMIT ?
   `;
 
-  // const answersResult = await safeExecute(answersSql,[q.id,String ( answerLimit)]);
+  // const answersResult = await safeExecute(answersSql, [q.id, answerLimit]);
   // const answerRows = unwrapRows(answersResult);
   const answersResult = await safeExecute(answersSql, [
     q.id,
     String(answerLimit),
   ]);
-  const answersRows = unwrapRows(answersResult);
+  const answerRows = unwrapRows(answersResult);
+
   // Format question data.
   const question = {
     id: q.id,
@@ -382,8 +382,7 @@ export const getSimilarQuestionsService = async ({
     WHERE question_hash = ?
   `;
 
-  // const sourceResult = await safeExecute(sourceSql, [questionHash]);
-  const questionResult = await safeExecute(questionSql, [String(questionHash)]);
+  const sourceResult = await safeExecute(sourceSql, [questionHash]);
   const sourceRows = unwrapRows(sourceResult);
 
   // If source question does not exist, throw 404.

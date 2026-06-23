@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css";
 import { useAuth } from "../../contexts/AuthContext";
 import { PenSquare, ListTodo, LibraryBig } from "lucide-react";
 import {
