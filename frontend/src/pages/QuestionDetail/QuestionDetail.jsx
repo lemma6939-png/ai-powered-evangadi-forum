@@ -10,6 +10,17 @@ import { answerService } from "../../services/answer/answer.service";
 import styles from "./QuestionDetail.module.css";
 
 export default function QuestionDetail() {
+// 
+//   const [data, setData] = useState({
+//   question: null,
+//   answers: [],
+//   answerText: "",      
+//   loading: true,       //Monolithic State Blob
+// });
+// setData({
+//   ...data,
+//   answerText: "H"
+// });
   const { questionHash } = useParams();
   const { user } = useAuth();
 
