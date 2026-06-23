@@ -11,7 +11,7 @@ import {
   getDocumentMetaService,
   assertOwnedDocument,
   listDocumentsService,
-  deleteDocumentService,
+  deleteDocumentService,//deleting functionality
 } from "../service/rag.service.js";
 
 export const createDocumentMulterErrorHandler = (error, req, res, next) => {
@@ -29,7 +29,7 @@ export const createDocumentMulterErrorHandler = (error, req, res, next) => {
 
   next(error);
 };
-
+//pdf upload 
 export const createDocumentController = async (req, res, next) => {
   try {
     if (!req.file) {
@@ -58,10 +58,6 @@ export const queryDocumentController = async (req, res, next) => {
     const { documentId } = req.params;
     const { query } = req.body;
 
-    // console.log("documentId:", documentId);
-    // console.log("user:", req.user);
-    // console.log("query:", query);
-
     const result = await queryDocumentService(
       Number(documentId),
       req.user.id, // ← FIXED
@@ -73,7 +69,7 @@ export const queryDocumentController = async (req, res, next) => {
       data: result,
     });
   } catch (error) {
-    // console.error("❌ QUERY ERROR:", error);
+    
     next(error);
   }
 };
@@ -115,6 +111,7 @@ export const getDocumentFileController = async (req, res, next) => {
 };
 
 export const getDocumentMetaController = async (req, res, next) => {
+  //  Fetch metadata for selected document
   try {
     const data = await getDocumentMetaService(
       req.params.documentId,
@@ -132,7 +129,7 @@ export const getDocumentMetaController = async (req, res, next) => {
 };
 
 
-export const deleteDocumentController = async (req, res, next) => {
+export const deleteDocumentController = async (req, res, next) => { //deleting uploded file
   try {
     const userId = req.user.id;
     const { documentId } = req.params;

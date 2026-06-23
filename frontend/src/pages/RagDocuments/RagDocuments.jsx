@@ -402,6 +402,7 @@ export default function RagDocuments() {
               <hr className={styles.divider} />
 
               {/* Semantic Search */}
+              {/* ask ai and search */}
               <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>Semantic search</h2>
                 <p className={styles.sectionDesc}>
