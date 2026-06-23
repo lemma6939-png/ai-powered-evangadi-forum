@@ -258,6 +258,101 @@ export const searchInDocumentService = async (
 };
 
 
+
+
+
+// export const queryDocumentService = async (
+//   documentId,
+//   userId,
+//   query,
+//   k = 5,
+// ) => {
+//   await assertOwnedDocument(documentId, userId);
+
+//   // Generate embedding for the user's question
+//   const queryVector = await embedQuery(query);
+
+//   // Get all chunks and embeddings for this document
+//   const rows = await safeExecute(
+//     `
+//       SELECT
+//         c.chunk_id,
+//         c.chunk_index,
+//         c.content,
+//         v.embedding
+//       FROM document_chunks c
+//       JOIN document_chunk_vectors v
+//         ON v.chunk_id = c.chunk_id
+//       WHERE c.document_id = ?
+//     `,
+//     [documentId],
+//   );
+
+//   // Calculate similarity scores
+// const scored = rows.map((r) => {
+//   // console.log("Embedding type:", typeof r.embedding);
+
+//   const vec =
+//     typeof r.embedding === "string" ? JSON.parse(r.embedding) : r.embedding;
+
+//   return {
+//     chunkId: r.chunk_id,
+//     chunkIndex: r.chunk_index,
+//     excerpt: r.content,
+//     score: cosineSimilarity(queryVector, vec),
+//   };
+// });
+
+//   // Get top matching chunks
+//   const top = scored.sort((a, b) => b.score - a.score).slice(0, k);
+
+//   // Build context for Gemini
+//   const context = top
+//     .map((t) => `Chunk ${t.chunkIndex}:\n${t.excerpt}`)
+//     .join("\n\n");
+
+//   const prompt = `
+// You are an assistant that answers user questions using ONLY the provided document context.
+
+// If the answer is not found in the context, respond with:
+// "Sorry, I don't know the answer to that question my answer is dependent on the given document thank you for understanding".
+
+
+
+// Context:
+// ${context}
+
+// Question:
+// ${query}
+
+// Answer:
+// `;
+
+//   try {
+//     const response = await ai.models.generateContent({
+//       model: GEMINI_TEXT_MODEL,
+//       contents: prompt,
+//     });
+
+//     const answerText = response.text || "";
+
+//     return {
+//       answer: answerText,
+//       citations: top.map((t) => ({
+//         ref: t.chunkId,
+//         chunkIndex: t.chunkIndex,
+//       })),
+//       chunksUsed: top.map((t) => t.chunkId),
+//     };
+//   } catch (err) {
+//     throw new ServiceUnavailableError(
+//       `Failed to generate answer: ${err.message}`,
+//     );
+//   }
+// };
+
+
+
 export const queryDocumentService = async (
   documentId,
   userId,
@@ -266,10 +361,10 @@ export const queryDocumentService = async (
 ) => {
   await assertOwnedDocument(documentId, userId);
 
-  // Generate embedding for the user's question
+  // Generate query embedding
   const queryVector = await embedQuery(query);
 
-  // Get all chunks and embeddings for this document
+  // Get document chunks
   const rows = await safeExecute(
     `
       SELECT
@@ -285,44 +380,82 @@ export const queryDocumentService = async (
     [documentId],
   );
 
-  // Calculate similarity scores
-const scored = rows.map((r) => {
-  // console.log("Embedding type:", typeof r.embedding);
+  // Score chunks
+  const scored = rows.map((r) => {
+    const vec =
+      typeof r.embedding === "string" ? JSON.parse(r.embedding) : r.embedding;
 
-  const vec =
-    typeof r.embedding === "string" ? JSON.parse(r.embedding) : r.embedding;
+    return {
+      chunkId: r.chunk_id,
+      chunkIndex: r.chunk_index,
+      excerpt: r.content,
+      score: cosineSimilarity(queryVector, vec),
+    };
+  });
 
-  return {
-    chunkId: r.chunk_id,
-    chunkIndex: r.chunk_index,
-    excerpt: r.content,
-    score: cosineSimilarity(queryVector, vec),
-  };
-});
-
-  // Get top matching chunks
+  // Top matching chunks
   const top = scored.sort((a, b) => b.score - a.score).slice(0, k);
 
-  // Build context for Gemini
+  if (top.length === 0) {
+    return {
+      answer:
+        "Sorry, I don't know the answer to that question. My answer is dependent on the provided document.",
+      citations: [],
+      chunksUsed: [],
+    };
+  }
+
+  // Context with citation numbers
   const context = top
-    .map((t) => `Chunk ${t.chunkIndex}:\n${t.excerpt}`)
+    .map(
+      (chunk, index) => `
+[${index + 1}]
+Chunk ID: ${chunk.chunkId}
+Chunk Index: ${chunk.chunkIndex}
+
+${chunk.excerpt}
+`,
+    )
     .join("\n\n");
 
   const prompt = `
-You are an assistant that answers user questions using ONLY the provided document context.
+You are a Retrieval Augmented Generation (RAG) assistant.
 
-If the answer is not found in the context, respond with:
-"Sorry, I don't know the answer to that question my answer is dependent on the given document thank you for understanding".
+IMPORTANT RULES:
 
+1. Answer ONLY from the provided context.
+2. Never use outside knowledge.
+3. Every factual statement must include a citation.
+4. Use citations exactly as [1], [2], [3], etc.
+5. If information comes from chunk 1, cite [1].
+6. If information comes from chunk 2, cite [2].
+7. Multiple citations are allowed like [1][2].
 
+Example:
 
-Context:
+HTML documents require a DOCTYPE declaration [1].
+
+Visual Studio Code can generate HTML boilerplate using Emmet [2].
+
+If the answer cannot be found in the context, reply exactly:
+
+"Sorry, I don't know the answer to that question. My answer is dependent on the provided document."
+
+====================
+DOCUMENT CONTEXT
+====================
+
 ${context}
 
-Question:
+====================
+QUESTION
+====================
+
 ${query}
 
-Answer:
+====================
+ANSWER
+====================
 `;
 
   try {
@@ -335,11 +468,19 @@ Answer:
 
     return {
       answer: answerText,
-      citations: top.map((t) => ({
-        ref: t.chunkId,
-        chunkIndex: t.chunkIndex,
+
+      citations: top.map((chunk, index) => ({
+        id: index + 1,
+        chunkId: chunk.chunkId,
+        chunkIndex: chunk.chunkIndex,
+        score: Number(chunk.score.toFixed(4)),
+        excerpt:
+          chunk.excerpt.length > 300
+            ? `${chunk.excerpt.substring(0, 300)}...`
+            : chunk.excerpt,
       })),
-      chunksUsed: top.map((t) => t.chunkId),
+
+      chunksUsed: top.map((chunk) => chunk.chunkId),
     };
   } catch (err) {
     throw new ServiceUnavailableError(
@@ -347,6 +488,19 @@ Answer:
     );
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 export const getDocumentFileService = async (documentId, userId) => {
