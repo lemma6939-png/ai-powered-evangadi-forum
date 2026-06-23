@@ -30,6 +30,8 @@ export default function RagDocuments() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState(null);
   const fileInputRef = useRef(null);
 
   const selectedDocument = useMemo(
@@ -146,21 +148,33 @@ export default function RagDocuments() {
     }
   };
 
-  const handleDelete = async (doc, e) => {
+  // Central confirm modal flow
+  const openConfirm = (doc, e) => {
     e.stopPropagation();
-    const confirmed = window.confirm(
-      `Delete "${doc.title}"? This cannot be undone.`,
-    );
-    if (!confirmed) return;
+    setConfirmTarget({ id: doc.document_id, title: doc.title });
+    setConfirmOpen(true);
+  };
+
+  const closeConfirm = (e) => {
+    if (e) e.stopPropagation();
+    setConfirmOpen(false);
+    setConfirmTarget(null);
+  };
+
+  const performDelete = async (e) => {
+    if (e) e.stopPropagation();
+    if (!confirmTarget) return;
     try {
       setLoading(true);
-      await deleteDocument(doc.document_id);
-      if (String(doc.document_id) === String(selectedId)) {
+      await deleteDocument(confirmTarget.id);
+      if (String(confirmTarget.id) === String(selectedId)) {
         setSelectedId(null);
         setAnswer("");
         setSearchResults([]);
         setPreviewUrl(null);
       }
+      setConfirmOpen(false);
+      setConfirmTarget(null);
       await loadDocuments();
     } catch (error) {
       setGlobalMessage(
@@ -345,8 +359,8 @@ export default function RagDocuments() {
                     <button
                       type="button"
                       className={styles.deleteBtn}
-                      onClick={(e) => handleDelete(doc, e)}
                       title="Delete document"
+                      onClick={(e) => openConfirm(doc, e)}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -494,6 +508,55 @@ export default function RagDocuments() {
           )}
         </section>
       </div>
+
+      {confirmOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.35)",
+            zIndex: 60,
+          }}
+          onClick={closeConfirm}
+        >
+          <div
+            style={{
+              background: "var(--surface)" || "#fff",
+              padding: 20,
+              borderRadius: 8,
+              minWidth: 320,
+              boxShadow: "0 6px 24px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p style={{ marginBottom: 12 }}>
+              Delete "{confirmTarget?.title}"? This cannot be undone.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                className={styles.deleteBtn}
+                onClick={performDelete}
+                style={{ marginRight: 8 }}
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                className={styles.deleteBtn}
+                onClick={closeConfirm}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
