@@ -282,10 +282,10 @@ export const queryDocumentService = async (
 ) => {
   await assertOwnedDocument(documentId, userId);
 
-  // Generate embedding for the user's question
+  // Generate query embedding
   const queryVector = await embedQuery(query);
 
-  // Get all chunks and embeddings for this document
+  // Get document chunks
   const rows = await safeExecute(
     `
       SELECT
@@ -301,20 +301,20 @@ export const queryDocumentService = async (
     [documentId],
   );
 
-  // Calculate similarity scores
+  // Score chunks
   const scored = rows.map((r) => {
     const vec =
       typeof r.embedding === "string" ? JSON.parse(r.embedding) : r.embedding;
 
-    return {
-      chunkId: r.chunk_id,
-      chunkIndex: r.chunk_index,
-      excerpt: r.content,
-      score: cosineSimilarity(queryVector, vec),
-    };
-  });
+  return {
+    chunkId: r.chunk_id,
+    chunkIndex: r.chunk_index,
+    excerpt: r.content,
+    score: cosineSimilarity(queryVector, vec),
+  };
+});
 
-  // Get top matching chunks
+  // Top matching chunks
   const top = scored.sort((a, b) => b.score - a.score).slice(0, k);
 
   // Build context with chunk markers
@@ -374,7 +374,8 @@ ANSWER:
         chunkIndex: t.chunkIndex,
         score: Number(t.score.toFixed(4)),
       })),
-      chunksUsed: top.map((t) => t.chunkId),
+
+      chunksUsed: top.map((chunk) => chunk.chunkId),
     };
   } catch (err) {
     throw new ServiceUnavailableError(
