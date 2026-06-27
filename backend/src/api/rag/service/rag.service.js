@@ -303,8 +303,6 @@ export const queryDocumentService = async (
 
   // Calculate similarity scores
   const scored = rows.map((r) => {
-    // console.log("Embedding type:", typeof r.embedding);
-
     const vec =
       typeof r.embedding === "string" ? JSON.parse(r.embedding) : r.embedding;
 
@@ -319,26 +317,46 @@ export const queryDocumentService = async (
   // Get top matching chunks
   const top = scored.sort((a, b) => b.score - a.score).slice(0, k);
 
-  // Build context for Gemini
+  // Build context with chunk markers
   const context = top
-    .map((t) => `Chunk ${t.chunkIndex}:\n${t.excerpt}`)
-    .join("\n\n");
+    .map(
+      (t) => `
+[chunk ${t.chunkIndex}]
+${t.excerpt}
+[/chunk ${t.chunkIndex}]
+`,
+    )
+    .join("\n");
 
-  const prompt = `
+ const prompt = `
 You are an assistant that answers user questions using ONLY the provided document context.
 
-If the answer is not found in the context, respond with:
-"Sorry, I don't know the answer to that question my answer is dependent on the given document thank you for understanding".
+RULES:
+1. Use ONLY information found in the provided context.
+2. Do NOT use outside knowledge.
+3. Format answers using Markdown.
+4. Use headings, bullet points, and numbered lists when appropriate.
+5. Write naturally and professionally.
+6. Do  place citations after every sentence.
+7. Group citations at the end of a paragraph, section, or list item.
+8. Citation format must be exactly: chunk[x] 
+9. Multiple citations should be grouped together, for example:
+   chunk [0][1][ 2]
+10. Do not invent citations.
+11. Only cite chunks that were provided in the context.
+12. When the answer contains multiple paragraphs, place citations at the end of each paragraph rather than after every sentence.
 
+If the answer is not found in the context, respond exactly with:
 
+Sorry, I don't know the answer to that question my answer is dependent on the given document thank you for understanding.
 
-Context:
+CONTEXT:
 ${context}
 
-Question:
+QUESTION:
 ${query}
 
-Answer:
+ANSWER:
 `;
 
   try {
@@ -347,13 +365,14 @@ Answer:
       contents: prompt,
     });
 
-    const answerText = response.text || "";
+    const answerText = (response.text || "").trim();
 
     return {
       answer: answerText,
       citations: top.map((t) => ({
         ref: t.chunkId,
         chunkIndex: t.chunkIndex,
+        score: Number(t.score.toFixed(4)),
       })),
       chunksUsed: top.map((t) => t.chunkId),
     };
@@ -363,7 +382,6 @@ Answer:
     );
   }
 };
-
 
 export const deleteDocumentService = async (documentId, userId) => {
   const doc = await assertOwnedDocument(documentId, userId);

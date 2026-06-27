@@ -59,9 +59,25 @@ export default function PostQuestion() {
 
       setTips(result.data?.tips || []);
     } catch (error) {
+      let message = "Failed to get AI suggestions.";
+
+      // Axios error format
+      if (error?.response?.data) {
+        const data = error.response.data;
+
+        message = data?.msg || data?.message || data?.error?.message || message;
+      }
+
+      // Fallback for non-Axios / stringified errors
+      else if (error?.error?.message) {
+        message = error.error.message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+
       setStatus({
         type: "error",
-        text: error.response?.data?.msg || "Failed to get AI suggestions.",
+        text: message,
       });
     } finally {
       setCoachLoading(false);
