@@ -34,21 +34,37 @@ export function AuthProvider({ children }) {
    * Registers a new user. Does not automatically log them in.
    * @param {Object} userData - { firstName, lastName, email, password }
    */
-  const register = async (userData) => {
-    setLoading(true);
-    try {
-      const { user } = await authService.register(userData);
-      // Registration does not log user in automatically. Return the user
-      // object so UI can prompt for login. Do NOT set any flags that make
-      // the app believe the user is authenticated.
-      return { success: true, user };
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+//######################### the fourth comment
+  // const register = async (userData) => {
+  //   setLoading(true);
+  //   try {
+  //     const { user } = await authService.register(userData);
+    // setUser(user);
+  //     // Registration does not log user in automatically. Return the user
+  //     // object so UI can prompt for login. Do NOT set any flags that make
+  //     // the app believe the user is authenticated.
+  //     return { success: true, user };
+  //   } catch (error) {
+  //     throw error;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const register = async (userData) => {
+  setLoading(true);
 
+  try {
+    const { user } = await authService.register(userData);
+
+    setUser(user);
+
+    return { success: true };
+  } catch (error) {
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
   /**
    * Authenticates a user and updates the session state.
    * @param {Object} credentials - { email, password }
