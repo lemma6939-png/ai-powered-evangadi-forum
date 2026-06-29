@@ -69,15 +69,36 @@ export const registerService = async ({
     }
     throw error;
   }
-
-  return {
+  //############### the first comment
+  //   return {
+  //     id: result.insertId,
+  //     firstName,
+  //     lastName,
+  //     email: normalizedEmail,
+  //   };
+  // };
+  const user = {
     id: result.insertId,
     firstName,
     lastName,
     email: normalizedEmail,
   };
-};
 
+  const payload = {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+  };
+
+  const token = jwt.sign(payload, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
+
+  return {
+    user,
+    token,
+  };
+}
 /**
  * Authenticates a user and generates a JWT token.
  *

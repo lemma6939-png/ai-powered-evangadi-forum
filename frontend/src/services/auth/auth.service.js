@@ -4,15 +4,29 @@ import { apiClient } from "../core/api.client.js";
  * Registers a new user.
  * @param {Object} userData - User details for registration.
  */
+//###################### the 3rd comment
+// async function register(userData) {
+//   try {
+//     const response = await apiClient.post("/api/auth/register", userData);
+//     return { user: response.data.user };
+//   } catch (error) {
+//     throw handleAuthError(error);
+//   }
+// }
 async function register(userData) {
   try {
     const response = await apiClient.post("/api/auth/register", userData);
-    return { user: response.data.user };
+
+    const { user, token } = response.data;
+
+    sessionStorage.setItem("token", token);
+    sessionStorage.setItem("user", JSON.stringify(user));
+
+    return { user, token };
   } catch (error) {
     throw handleAuthError(error);
   }
 }
-
 /**
  * Logs in an existing user and stores their session in sessionStorage.
  * @param {Object} credentials - User login credentials.
