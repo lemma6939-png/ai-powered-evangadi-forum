@@ -199,6 +199,20 @@ export default function Auth() {
           password,
         });
         setSuccessMessage("Registration successful! Please log in.");
+        //########################## the fifth comment
+        // setSuccessMessage('Registration successful! Please log in.');
+        // // Clear form fields
+        // setFirstName('');
+        // setLastName('');
+        // setEmail('');
+        // setPassword('');
+        // // Automatically switch to login form after 1.5 seconds
+        // setTimeout(() => {
+        //   setIsLogin(true);
+        //   setSuccessMessage(null);
+        // }, 1500);
+        setSuccessMessage("Registration successful. Redirecting...");
+
         setFirstName("");
         setLastName("");
         setEmail("");
@@ -207,6 +221,11 @@ export default function Auth() {
           setIsLogin(true);
           setSuccessMessage(null);
         }, 1500);
+        setShowPassword(false);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        navigate("/dashboard", { replace: true });
       }
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");

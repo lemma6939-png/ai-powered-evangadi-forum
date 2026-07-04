@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 /* react hooks ,run code after compent display/stord ques,load,error*/
 import { Link } from "react-router-dom";
 /**with out refreshing pages changing smoothly */
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css";
 import { getMyQuestions } from "../../services/question/question.service";
 /**calls the bacend api,eg get/api/qu/me */
 import styles from "./MyQuestions.module.css";
@@ -36,8 +39,8 @@ export default function MyQuestions() {
           <span>Your Workspace</span>
           <h1>Your topics</h1>
           <p>
-            Only questions you created. Open one to read answers or add follow-ups.
-            Rows use the same left accent as your threads on Home.
+            Only questions you created. Open one to read answers or add
+            follow-ups. Rows use the same left accent as your threads on Home.
           </p>
         </div>
 
@@ -74,7 +77,11 @@ export default function MyQuestions() {
 
               <div className={styles.topicBody}>
                 <h3>{question.title}</h3>
-                <p>{question.content}</p>
+                <div className={styles.previewContent}>
+                  <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                    {question.content || ""}
+                  </ReactMarkdown>
+                </div>
 
                 <small>
                   {question.answerCount || 0} replies ·{" "}

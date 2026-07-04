@@ -1,27 +1,17 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { authService } from "../../services/auth/auth.service.js";
 import styles from "./Landing.module.css";
 
 export default function Landing() {
-  const location = useLocation();
   const { isAuthenticated } = useAuth();
 
   // Determine authentication state from the authoritative auth service
   // (checks stored token/session). Do NOT rely on transient component state.
-  const contextAuth = Boolean(isAuthenticated);
   const serviceAuth = Boolean(authService.isAuthenticated());
   const storedUser = authService.getStoredUser();
 
   const finalAuth = Boolean(serviceAuth && storedUser);
-
-  // Temporary logs to verify behavior during testing
-  // eslint-disable-next-line no-console
-  console.log("Landing: context isAuthenticated =", contextAuth);
-  // eslint-disable-next-line no-console
-  console.log("Landing: authService.isAuthenticated() =", serviceAuth);
-  // eslint-disable-next-line no-console
-  console.log("Landing: final computed auth =", finalAuth);
 
   const primaryLabel = finalAuth ? "Open forum" : "Create free account";
   const primaryTo = finalAuth ? "/dashboard" : "/auth";
@@ -42,9 +32,7 @@ export default function Landing() {
           <a href="#features">Features</a>
           <a href="#how">How it works</a>
 
-          <Link to={isAuthenticated ? "/dashboard" : "/dashboard"}>
-            Sign in
-          </Link>
+          <Link to="/dashboard">Sign in</Link>
 
           <Link to={primaryTo} className={styles.headerBtn}>
             {primaryLabel}
@@ -67,10 +55,7 @@ export default function Landing() {
           </p>
 
           <div className={styles.actions}>
-            <Link
-              to={isAuthenticated ? "/dashboard" : "/dashboard"}
-              className={styles.primaryBtn}
-            >
+            <Link to="/dashboard" className={styles.primaryBtn}>
               Get started
             </Link>
 

@@ -86,6 +86,8 @@ export default function Sidebar() {
           New Question
         </button>
 
+
+
         <div className={styles.sidebar__user}>
           <div className={styles.sidebar__profile}>
             <div className={styles.sidebar__avatar}>

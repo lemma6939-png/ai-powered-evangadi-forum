@@ -6,6 +6,14 @@ import {useAuth} from "../../contexts/AuthContext";
 /**custom hook access auth context,provides user state and personaliz greeting */
 import {PenSquare, ListTodo, LibraryBig} from "lucide-react";
 /**icons for new question, your topics, knowledge base */
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css";
+import { useAuth } from "../../contexts/AuthContext";
+import { PenSquare, ListTodo, LibraryBig } from "lucide-react";
 import {
   getQuestions,
   searchQuestionsSemantic,
@@ -151,7 +159,7 @@ export default function Dashboard() {
           </div>
 { /** css modules handel personlized greething      (render hero) */ }
           <div className={styles.searchColumn}>
-            <form className={styles.searchForm} onSubmit={handleSearch}>
+            {/* <form className={styles.searchForm} onSubmit={handleSearch}>
               <input
                 type="text"
                 value={searchInput}
@@ -187,6 +195,13 @@ export default function Dashboard() {
                 Semantic
               </button>
             </div> */}
+            </form> */}
+
+            <div className={styles.searchMode}>
+             
+              
+              
+            </div>
           </div>
         </div>
  {/**keyword,semantic button handleler on click updat or swich surchMode stat, current url not change till"submit button triger*/}

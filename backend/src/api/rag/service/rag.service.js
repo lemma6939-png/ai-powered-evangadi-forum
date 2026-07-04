@@ -225,6 +225,11 @@ export const createDocumentFromUploadService = async ({ userId, file }) => {
     }
   }
 };
+/**
+
+* Semantic search over document chunks using cosine similarity.
+* Returns top-k most relevant chunks for a given query.
+  */
 
 export const searchInDocumentService = async (
   documentId,
@@ -262,6 +267,12 @@ export const searchInDocumentService = async (
   };
 };
 
+/**
+
+* Runs a RAG query over a document.
+* Finds relevant chunks via embeddings, builds a prompt,
+* and generates an answer using the LLM constrained to context.
+  */
 
 export const queryDocumentService = async (
   documentId,
@@ -271,10 +282,10 @@ export const queryDocumentService = async (
 ) => {
   await assertOwnedDocument(documentId, userId);
 
-  // Generate embedding for the user's question
+  // Generate query embedding
   const queryVector = await embedQuery(query);
 
-  // Get all chunks and embeddings for this document
+  // Get document chunks
   const rows = await safeExecute(
     `
       SELECT
@@ -290,12 +301,10 @@ export const queryDocumentService = async (
     [documentId],
   );
 
-  // Calculate similarity scores
-const scored = rows.map((r) => {
-  // console.log("Embedding type:", typeof r.embedding);
-
-  const vec =
-    typeof r.embedding === "string" ? JSON.parse(r.embedding) : r.embedding;
+  // Score chunks
+  const scored = rows.map((r) => {
+    const vec =
+      typeof r.embedding === "string" ? JSON.parse(r.embedding) : r.embedding;
 
   return {
     chunkId: r.chunk_id,
@@ -305,29 +314,49 @@ const scored = rows.map((r) => {
   };
 });
 
-  // Get top matching chunks
+  // Top matching chunks
   const top = scored.sort((a, b) => b.score - a.score).slice(0, k);
 
-  // Build context for Gemini
+  // Build context with chunk markers
   const context = top
-    .map((t) => `Chunk ${t.chunkIndex}:\n${t.excerpt}`)
-    .join("\n\n");
+    .map(
+      (t) => `
+[chunk ${t.chunkIndex}]
+${t.excerpt}
+[/chunk ${t.chunkIndex}]
+`,
+    )
+    .join("\n");
 
-  const prompt = `
+ const prompt = `
 You are an assistant that answers user questions using ONLY the provided document context.
 
-If the answer is not found in the context, respond with:
-"Sorry, I don't know the answer to that question my answer is dependent on the given document thank you for understanding".
+RULES:
+1. Use ONLY information found in the provided context.
+2. Do NOT use outside knowledge.
+3. Format answers using Markdown.
+4. Use headings, bullet points, and numbered lists when appropriate.
+5. Write naturally and professionally.
+6. Do  place citations after every sentence.
+7. Group citations at the end of a paragraph, section, or list item.
+8. Citation format must be exactly: chunk[x] 
+9. Multiple citations should be grouped together, for example:
+   chunk [0][1][ 2]
+10. Do not invent citations.
+11. Only cite chunks that were provided in the context.
+12. When the answer contains multiple paragraphs, place citations at the end of each paragraph rather than after every sentence.
 
+If the answer is not found in the context, respond exactly with:
 
+Sorry, I don't know the answer to that question my answer is dependent on the given document thank you for understanding.
 
-Context:
+CONTEXT:
 ${context}
 
-Question:
+QUESTION:
 ${query}
 
-Answer:
+ANSWER:
 `;
 
   try {
@@ -336,15 +365,17 @@ Answer:
       contents: prompt,
     });
 
-    const answerText = response.text || "";
+    const answerText = (response.text || "").trim();
 
     return {
       answer: answerText,
       citations: top.map((t) => ({
         ref: t.chunkId,
         chunkIndex: t.chunkIndex,
+        score: Number(t.score.toFixed(4)),
       })),
-      chunksUsed: top.map((t) => t.chunkId),
+
+      chunksUsed: top.map((chunk) => chunk.chunkId),
     };
   } catch (err) {
     throw new ServiceUnavailableError(
@@ -353,11 +384,6 @@ Answer:
   }
 };
 
-
-export const getDocumentFileService = async (documentId, userId) => {
-  const doc = await assertOwnedDocument(documentId, userId);
-  return doc.storage_path;
-};
 export const deleteDocumentService = async (documentId, userId) => {
   const doc = await assertOwnedDocument(documentId, userId);
 
@@ -365,12 +391,13 @@ export const deleteDocumentService = async (documentId, userId) => {
 
   try {
     await fs.unlink(filePath);
-  } catch {}
+  } catch { }
 
   await safeExecute("DELETE FROM documents WHERE document_id = ?", [//deleting uploded file from db
     documentId,
   ]);
-    return { id: documentId };
+
+  return { id: documentId };
 };
 
 export const getDocumentMetaService = async (documentId, userId) => {

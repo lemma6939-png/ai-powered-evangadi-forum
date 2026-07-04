@@ -66,6 +66,51 @@ export default function RagDocuments() {
     useEffect(() => {
       if (answer) {
         speak(answer);
+  const [documents, setDocuments] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [globalMessage, setGlobalMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [askQuery, setAskQuery] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [answerLoading, setAnswerLoading] = useState(false);
+  const [answerError, setAnswerError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const selectedDocument = useMemo(
+    () =>
+      documents.find((doc) => String(doc.document_id) === String(selectedId)),
+    [documents, selectedId],
+  );
+
+  const loadDocuments = async (preferredId = null) => {
+    setLoading(true);
+    setGlobalMessage("");
+    try {
+      const result = await listDocuments();
+      const list = result.data || [];
+      setDocuments(list);
+      if (preferredId) {
+        setSelectedId(String(preferredId));
+      } else if (!selectedId && list.length > 0) {
+        setSelectedId(String(list[0].document_id));
+      } else if (
+        list.length > 0 &&
+        selectedId &&
+        !list.some((doc) => String(doc.document_id) === String(selectedId))
+      ) {
+        setSelectedId(String(list[0].document_id));
       }
     }, [answer]);
 
@@ -183,6 +228,39 @@ export default function RagDocuments() {
         const newDoc = result.data;
         setSelectedFile(null);
         await loadDocuments(newDoc?.document_id);
+      setSearchQuery("");
+    } catch (error) {
+      setUploadError(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to upload PDF.",
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Central confirm modal flow
+  const openConfirm = (doc, e) => {
+    e.stopPropagation();
+    setConfirmTarget({ id: doc.document_id, title: doc.title });
+    setConfirmOpen(true);
+  };
+
+  const closeConfirm = (e) => {
+    if (e) e.stopPropagation();
+    setConfirmOpen(false);
+    setConfirmTarget(null);
+  };
+
+  const performDelete = async (e) => {
+    if (e) e.stopPropagation();
+    if (!confirmTarget) return;
+    try {
+      setLoading(true);
+      await deleteDocument(confirmTarget.id);
+      if (String(confirmTarget.id) === String(selectedId)) {
+        setSelectedId(null);
         setAnswer("");
         setSearchResults([]);
         setSearchQuery("");
@@ -201,6 +279,64 @@ export default function RagDocuments() {
       e.stopPropagation();
       const confirmed = window.confirm(
         `Delete "${doc.title}"? This cannot be undone.`,
+      setConfirmOpen(false);
+      setConfirmTarget(null);
+      await loadDocuments();
+    } catch (error) {
+      setGlobalMessage(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to delete document.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAsk = async () => {
+    if (!askQuery.trim()) {
+      setAnswerError("Please type a question to ask the PDF.");
+      return;
+    }
+    if (!selectedDocument) return;
+    setAnswerError("");
+    setAnswer("");
+    setAnswerLoading(true);
+    try {
+      const result = await queryDocument(
+        selectedDocument.document_id,
+        askQuery,
+      );
+      setAnswer(result.data?.answer || result.data || "No answer returned.");
+    } catch (error) {
+      setAnswerError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not get an answer.",
+      );
+    } finally {
+      setAnswerLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setSearchError("Please enter a search phrase.");
+      return;
+    }
+    if (!selectedDocument) return;
+    setSearchError("");
+    setSearchResults([]);
+    setSearchLoading(true);
+    try {
+      const result = await searchInDocument(
+        selectedDocument.document_id,
+        searchQuery,
+      );
+      setSearchResults(result.data?.results || result.data || []);
+    } catch (error) {
+      setSearchError(
+        error.response?.data?.message || error.message || "Search failed.",
       );
       if (!confirmed) return;
       try {
@@ -279,6 +415,98 @@ export default function RagDocuments() {
       if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
       return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
     };
+            {uploadError && <p className={styles.inlineError}>{uploadError}</p>}
+          </div>
+
+          {/* Document list */}
+          <div className={styles.docList}>
+            {loading ? (
+              <p className={styles.statusText}>Loading your library...</p>
+            ) : documents.length === 0 ? (
+              <p className={styles.statusText}>
+                Your library is empty. Upload a PDF to index it for search and
+                Q&A.
+              </p>
+            ) : (
+              documents.map((doc) => {
+                const isSelected =
+                  String(doc.document_id) === String(selectedId);
+                const isReady = doc.status === "ready";
+                return (
+                  <button
+                    type="button"
+                    key={doc.document_id}
+                    className={`${styles.docItem} ${
+                      isSelected ? styles.docItemActive : ""
+                    }`}
+                    onClick={() => handleSelectDocument(doc.document_id)}
+                  >
+                    <div className={styles.docItemLeft}>
+                      <span className={styles.docName}>{doc.title}</span>
+                      <span
+                        className={`${styles.badge} ${
+                          isReady ? styles.badgeReady : styles.badgeProcessing
+                        }`}
+                      >
+                        {isReady ? "READY" : "PROCESSING"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.deleteBtn}
+                      title="Delete document"
+                      onClick={(e) => openConfirm(doc, e)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </aside>
+
+        {/* ── Right panel ── */}
+        <section className={styles.panel}>
+          {!selectedDocument ? (
+            <div className={styles.emptyPanel}>
+              <p>
+                Choose a document from the library to open the reader, run
+                semantic search over its text, and ask questions with
+                AI-assisted answers grounded in that file.
+              </p>
+            </div>
+          ) : selectedDocument.status !== "ready" ? (
+            <div className={styles.emptyPanel}>
+              <p>
+                This document is not ready for preview or AI tools. Current
+                status: <strong>{selectedDocument.status}</strong>.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Reader */}
+              <div className={styles.section}>
+                <h2 className={styles.sectionTitle}>Reader</h2>
+                <p className={styles.sectionDesc}>
+                  Inline preview of the selected PDF.
+                </p>
+                <div className={styles.readerBox}>
+                  {previewLoading ? (
+                    <p className={styles.previewStatus}>
+                      Loading document preview...
+                    </p>
+                  ) : previewError ? (
+                    <p className={styles.inlineError}>{previewError}</p>
+                  ) : previewUrl ? (
+                    <iframe
+                      title="PDF preview"
+                      src={previewUrl}
+                      className={styles.iframe}
+                    />
+                  ) : null}
+                </div>
+              </div>
 
     // ─── Render ─────────────────────────────────────────────────
     return (
@@ -596,6 +824,57 @@ export default function RagDocuments() {
       </div>
     );
   }
+
+      {confirmOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.35)",
+            zIndex: 60,
+          }}
+          onClick={closeConfirm}
+        >
+          <div
+            style={{
+              background: "var(--surface)" || "#fff",
+              padding: 20,
+              borderRadius: 8,
+              minWidth: 320,
+              boxShadow: "0 6px 24px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p style={{ marginBottom: 12 }}>
+              Delete "{confirmTarget?.title}"? This cannot be undone.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                className={styles.deleteBtn}
+                onClick={performDelete}
+                style={{ marginRight: 8 }}
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                className={styles.deleteBtn}
+                onClick={closeConfirm}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // import {speak} from "../../accessibility/textToSpeech";

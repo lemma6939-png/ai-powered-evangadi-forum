@@ -72,6 +72,48 @@
   line-height: 1.7;
 }
 
+/* Markdown code block and inline code styles */
+.codeBlockWrapper {
+  position: relative;
+  margin: 12px 0;
+}
+
+.codeLang {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: #0f172a;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.questionText pre,
+.answerText pre {
+  /* background: #0b1220; dark backdrop complements highlight theme */
+  color: #e6eef6;
+  padding: 14px;
+  /* border-radius: 10px; */
+  overflow: auto;
+  font-family:
+    "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+    "Helvetica Neue", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.inlineCode {
+  background: #000;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  font-size: 13px;
+}
+
 .cardActions {
   display: flex;
   gap: 10px;
