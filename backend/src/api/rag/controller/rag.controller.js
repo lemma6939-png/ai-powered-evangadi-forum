@@ -1,4 +1,5 @@
 
+
 import path from "path";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError } from "../../../utils/errors/index.js";
@@ -29,7 +30,7 @@ export const createDocumentMulterErrorHandler = (error, req, res, next) => {
 
   next(error);
 };
-//pdf upload 
+//pdf upload
 export const createDocumentController = async (req, res, next) => {
   try {
     if (!req.file) {
@@ -99,7 +100,6 @@ export const searchInDocumentController = async (req, res, next) => {
   }
 };
 
-
 const UPLOAD_ROOT = path.resolve(process.cwd(), "uploads/rag");
 
 export const getDocumentFileController = async (req, res, next) => {
@@ -130,7 +130,6 @@ export const getDocumentMetaController = async (req, res, next) => {
     next(err);
   }
 };
-
 
 export const deleteDocumentController = async (req, res, next) => { //deleting uploded file
   try {
@@ -163,7 +162,3 @@ export const listDocumentsController = async (req, res, next) => {
     next(error);
   }
 };
-
-
-
-

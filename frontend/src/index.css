@@ -226,3 +226,31 @@ h5 {
 h6 {
   font-size: var(--text-base);
 }
+/* Accessibility: High Contrast Mode added by me*/
+body.high-contrast {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+body.high-contrast * {
+  background-color: #000 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+body.high-contrast a {
+  color: #ff0 !important;
+}
+body.high-contrast button {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+/* Accessibility: Large Text Mode */
+body.large-text {
+  font-size: 20px !important;
+}
+body.large-text input,
+body.large-text textarea,
+body.large-text button {
+  font-size: 22px !important;
+  padding: 12px !important;
+}
