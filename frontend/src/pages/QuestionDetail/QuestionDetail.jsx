@@ -1,63 +1,21 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { useEffect, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { isAuthoredByUser } from "../../lib/utils";
-=======
-=======
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
-import {useEffect, useState} from "react";
-import {Link, useParams} from "react-router-dom";
-import {useAuth} from "../../contexts/AuthContext";
-import {isAuthoredByUser} from "../../lib/utils";
-<<<<<<< HEAD
->>>>>>> Fe24
-=======
-import { useEffect, useState, useRef } from "react";
-import { Link, useParams } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { isAuthoredByUser } from "../../lib/utils";
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
 import {
   getQuestion,
   getSimilarQuestions,
 } from "../../services/question/question.service";
-import {answerService} from "../../services/answer/answer.service";
-import {speak} from "../../accessibility/textToSpeech";
+import { answerService } from "../../services/answer/answer.service";
+import { speak } from "../../accessibility/textToSpeech";
 import styles from "./QuestionDetail.module.css";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
-export default function QuestionDetail() {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  const {questionHash} = useParams();
-  const {user} = useAuth();
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
-  //
-  //   const [data, setData] = useState({
-  //   question: null,
-  //   answers: [],
-  //   answerText: "",
-  //   loading: true,       //Monolithic State Blob
-  // });
-  // setData({
-  //   ...data,
-  //   answerText: "H"
-  // });
 
-  //state partitioning
+export default function QuestionDetail() {
   const { questionHash } = useParams();
   const { user } = useAuth();
-<<<<<<< HEAD
-=======
-  const {questionHash} = useParams();
-  const {user} = useAuth();
->>>>>>> Fe24
-=======
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
 
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
@@ -128,13 +86,6 @@ export default function QuestionDetail() {
       // Reset relevant state immediately so the UI reflects the new load
       setLoading(true);
       setMessage("");
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-      const result = await getQuestion(questionHash);
-      setQuestion(result.question || result.data?.question);
-      setAnswers(result.answers || result.data?.answers || []);
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
       setQuestion(null);
       setAnswers([]);
       setRelatedQuestions([]);
@@ -178,14 +129,6 @@ export default function QuestionDetail() {
       }
 
       // Load related questions but ignore if a newer request started
-<<<<<<< HEAD
-=======
-      const result = await getQuestion(questionHash);
-      setQuestion(result.question || result.data?.question);
-      setAnswers(result.answers || result.data?.answers || []);
->>>>>>> Fe24
-=======
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
       await loadRelatedQuestions();
       if (localRequestId !== requestIdRef.current) return;
 
@@ -244,7 +187,7 @@ export default function QuestionDetail() {
     const text = `Check out this question: ${question.title}`;
     try {
       if (navigator.share) {
-        await navigator.share({title, text, url: shareUrl});
+        await navigator.share({ title, text, url: shareUrl });
         setShareStatus("Question shared successfully.");
       } else {
         await navigator.clipboard.writeText(shareUrl);
@@ -403,128 +346,77 @@ export default function QuestionDetail() {
                       <p>Community answer</p>
                     </div>
                   </div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-                </div>
 
-                <div className={styles.answerText}>
-                  <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
-                    {answer.content || ""}
-                  </ReactMarkdown>
-                </div>
-              </article>
-            ))}
-          </div>
-=======
-=======
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
-                  <p className={styles.answerText}>{answer.content}</p>
-                  <button
-                    onClick={() => speak(answer.content)}
-                    style={{
-                      backgroundColor: "#0066FF",
-                      color: "white",
-                      border: "none",
-                      padding: "2px 10px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    🔊 Read
-                  </button>
+                  <div className={styles.answerText}>
+                    <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                      {answer.content || ""}
+                    </ReactMarkdown>
+                  </div>
                 </article>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={readAnswers}
-              style={{
-                backgroundColor: "#0066FF",
-                color: "white",
-                border: "none",
-                padding: "8px 16px",
-                borderRadius: "4px",
-                marginTop: "12px",
-              }}
-            >
-              🔊 Read All Answers
-            </button>
+            <form className={styles.answerForm} onSubmit={handleSubmitAnswer}>
+              <h3>Contribute an answer</h3>
+              {message && <p className={styles.errorText}>{message}</p>}
+              <div className={styles.toolbar}>
+                <span>B</span>
+                <span>I</span>
+                <span>🔗</span>
+                <span>&lt;/&gt;</span>
+                <small>{answerText.length} characters</small>
+              </div>
+              <textarea
+                value={answerText}
+                onChange={(e) => setAnswerText(e.target.value)}
+                placeholder={
+                  isOwnQuestion
+                    ? "You cannot answer your own question."
+                    : "Type your answer here..."
+                }
+                disabled={isOwnQuestion}
+              />
+              <div className={styles.formFooter}>
+                <button
+                  type="button"
+                  className={styles.fitBtn}
+                  onClick={handleAnswerFit}
+                  disabled={!answerText.trim() || submitting || isOwnQuestion}
+                >
+                  Check draft fit
+                </button>
+                <button
+                  type="submit"
+                  className={styles.orangeBtn}
+                  disabled={submitting || isOwnQuestion || isWeakDraft}
+                >
+                  {submitting ? "Posting..." : "Post Your Answer"}
+                </button>
+              </div>
+              {(isOwnQuestion || isWeakDraft) && (
+                <div className={styles.warningBox}>
+                  {isOwnQuestion && (
+                    <p>You cannot post an answer to your own question.</p>
+                  )}
+                  {isWeakDraft && (
+                    <p>
+                      Weak answers are not allowed for posting. Please rewrite
+                      with more clarity.
+                    </p>
+                  )}
+                </div>
+              )}
+              {fitResult && (
+                <div className={styles.fitBox}>
+                  <strong>AI Answer Evaluation</strong>
+                  <p>
+                    <b>Level:</b> {fitResult.level}
+                  </p>
+                  <p>{fitResult.note}</p>
+                </div>
+              )}
+            </form>
           </>
-<<<<<<< HEAD
->>>>>>> Fe24
-=======
-                </div>
-
-                <div className={styles.answerText}>
-                  <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
-                    {answer.content || ""}
-                  </ReactMarkdown>
-                </div>
-              </article>
-            ))}
-          </div>
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
         )}
-
-        <form className={styles.answerForm} onSubmit={handleSubmitAnswer}>
-          <h3>Contribute an answer</h3>
-          {message && <p className={styles.errorText}>{message}</p>}
-          <div className={styles.toolbar}>
-            <span>B</span>
-            <span>I</span>
-            <span>🔗</span>
-            <span>&lt;/&gt;</span>
-            <small>{answerText.length} characters</small>
-          </div>
-          <textarea
-            value={answerText}
-            onChange={(e) => setAnswerText(e.target.value)}
-            placeholder={
-              isOwnQuestion
-                ? "You cannot answer your own question."
-                : "Type your answer here..."
-            }
-            disabled={isOwnQuestion}
-          />
-          <div className={styles.formFooter}>
-            <button
-              type="button"
-              className={styles.fitBtn}
-              onClick={handleAnswerFit}
-              disabled={!answerText.trim() || submitting || isOwnQuestion}
-            >
-              Check draft fit
-            </button>
-            <button
-              type="submit"
-              className={styles.orangeBtn}
-              disabled={submitting || isOwnQuestion || isWeakDraft}
-            >
-              {submitting ? "Posting..." : "Post Your Answer"}
-            </button>
-          </div>
-          {(isOwnQuestion || isWeakDraft) && (
-            <div className={styles.warningBox}>
-              {isOwnQuestion && (
-                <p>You cannot post an answer to your own question.</p>
-              )}
-              {isWeakDraft && (
-                <p>
-                  Weak answers are not allowed for posting. Please rewrite with
-                  more clarity.
-                </p>
-              )}
-            </div>
-          )}
-          {fitResult && (
-            <div className={styles.fitBox}>
-              <strong>AI Answer Evaluation</strong>
-              <p>
-                <b>Level:</b> {fitResult.level}
-              </p>
-              <p>{fitResult.note}</p>
-            </div>
-          )}
-        </form>
       </div>
 
       <aside className={styles.side}>
@@ -534,20 +426,6 @@ export default function QuestionDetail() {
             <p>No related questions found yet.</p>
           </div>
         ) : (
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-          relatedQuestions.map((related) => (
-            <Link
-              key={related.questionHash || related.id}
-              to={`/questions/${related.questionHash}`}
-              className={styles.relatedCard}
-            >
-              <h4>{related.title}</h4>
-              <p>{related.content?.slice(0, 60) || "View details"}</p>
-            </Link>
-          ))
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
           relatedQuestions.map((related) => {
             const target = related?.questionHash || related?.id;
 
@@ -575,21 +453,6 @@ export default function QuestionDetail() {
               </Link>
             );
           })
-<<<<<<< HEAD
-=======
-          relatedQuestions.map((related) => (
-            <Link
-              key={related.questionHash || related.id}
-              to={`/questions/${related.questionHash}`}
-              className={styles.relatedCard}
-            >
-              <h4>{related.title}</h4>
-              <p>{related.content?.slice(0, 60) || "View details"}</p>
-            </Link>
-          ))
->>>>>>> Fe24
-=======
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
         )}
       </aside>
     </section>

@@ -1,20 +1,10 @@
 import { useEffect, useState } from "react";
 /* react hooks ,run code after compent display/stord ques,load,error*/
 import { Link } from "react-router-dom";
-<<<<<<< HEAD
-<<<<<<< HEAD
-import ReactMarkdown from "react-markdown";
-import rehypeHighlight from "rehype-highlight";
-import "highlight.js/styles/github.css";
-=======
-/**with out refreshing pages changing smoothly */
->>>>>>> Fe24
-=======
 /**with out refreshing pages changing smoothly */
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2
 import { getMyQuestions } from "../../services/question/question.service";
 /**calls the bacend api,eg get/api/qu/me */
 import styles from "./MyQuestions.module.css";
@@ -37,7 +27,7 @@ export default function MyQuestions() {
       setLoading(false);
     }
   };
-/**creat page user see/stor all ques,err messg,track data is loading from server */
+  /**creat page user see/stor all ques,err messg,track data is loading from server */
   useEffect(() => {
     loadMyQuestions();
   }, []);
@@ -74,7 +64,7 @@ export default function MyQuestions() {
             sidebar to start.
           </div>
         )}
-{/**load once,empty array,return,page container,heading,title,desc,new ques link to ask ques, */}
+        {/**load once,empty array,return,page container,heading,title,desc,new ques link to ask ques, */}
         {!loading &&
           !message &&
           questions.map((question) => (
@@ -104,11 +94,4 @@ export default function MyQuestions() {
     </div>
   );
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 /**map loop through every ques,db/quesHash-to identify eachRow impruv performanc */
->>>>>>> Fe24
-=======
-/**map loop through every ques,db/quesHash-to identify eachRow impruv performanc */
->>>>>>> 1ecd3ef8e24d60a79b780d3188d45b9441d57af2

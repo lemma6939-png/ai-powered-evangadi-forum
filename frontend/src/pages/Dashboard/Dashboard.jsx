@@ -1,33 +1,21 @@
-<<<<<<<<< Temporary merge branch 1
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import { useAuth } from "../../contexts/AuthContext";
 import { PenSquare, ListTodo, LibraryBig } from "lucide-react";
-=========
-import {useEffect, useMemo, useState} from "react";
-/**react hooks/fetch data url chags/statics , computing,avoid recalculat evry 561 render/holde component,questin,search input*/
-import {Link, useSearchParams} from "react-router-dom";
-/**react router,navigat pages w o refraesh/hook read,modify url,allow bookmark,shering */
-import {useAuth} from "../../contexts/AuthContext";
-/**custom hook access auth context,provides user state and personaliz greeting */
-import {PenSquare, ListTodo, LibraryBig} from "lucide-react";
-/**icons for new question, your topics, knowledge base */
->>>>>>>>> Temporary merge branch 2
 import {
   getQuestions,
   searchQuestionsSemantic,
 } from "../../services/question/question.service";
 /**service functions to fetch questions from backend,keyword and semantic search */
-import {speak} from "../../accessibility/textToSpeech";
+import { speak } from "../../accessibility/textToSpeech";
 /**text to speech function to read question title and content aloud */
 import styles from "./Dashboard.module.css";
 
 export default function Dashboard() {
-  const {user} = useAuth();
+  const { user } = useAuth();
   /**get the current logged in user from auth context to personalize greeting and filter questions */
   const [searchParams, setSearchParams] = useSearchParams();
   /**hook to read and modify the URL search parameters for search queries, pagination, and mode */
@@ -37,7 +25,7 @@ export default function Dashboard() {
     page: 1,
     limit: 3,
     total: 0,
-    totalPages: 1, 
+    totalPages: 1,
   });
   /**state to hold pagination metadata for the questions list */
   const [searchInput, setSearchInput] = useState(
@@ -64,7 +52,7 @@ export default function Dashboard() {
     );
     /**calculate the total number of replies across all questions */
     const unanswered = questions.filter((q) => !q.answerCount).length;
-    return {total, replies, unanswered};
+    return { total, replies, unanswered };
   }, [meta.total, questions]);
   /**useMemo to compute statistics (total questions, total replies, unanswered questions) based on the current questions and metadata, avoiding unnecessary recalculations on every render */
   const loadQuestions = async () => {
@@ -90,7 +78,7 @@ export default function Dashboard() {
       }
       /**if semantic is true call semantic surch,no need pagination/setQuestion,result array,setMeta,reflect singlpag */
 
-      const params = {page, limit};
+      const params = { page, limit };
       if (keyword) params.search = keyword;
 
       const result = await getQuestions(params);
@@ -130,14 +118,14 @@ export default function Dashboard() {
     } else {
       params.delete("semantic");
     }
-/**if it is true=set,else remuve semantic based on page limit            (pagination handler)*/
+    /**if it is true=set,else remuve semantic based on page limit            (pagination handler)*/
 
     params.set("page", "1");
     params.set("limit", String(meta.limit));
     setSearchParams(params);
   };
-/** for new search ,always rest page to 1 with limit,push new url,to triger useffect,to fach new data */
-  const changePage = (newPage) => { 
+  /** for new search ,always rest page to 1 with limit,push new url,to triger useffect,to fach new data */
+  const changePage = (newPage) => {
     setSearchParams((prev) => {
       const params = new URLSearchParams(prev);
       params.set("page", newPage);
@@ -145,10 +133,10 @@ export default function Dashboard() {
       return params;
     });
   };
-/**update the url page param,to newpage,keep limit useeffect,detact chang snd reload*/
+  /**update the url page param,to newpage,keep limit useeffect,detact chang snd reload*/
   const canGoBack = meta.page > 1;
   const canGoForward = meta.page < meta.totalPages;
-/**boolean,disable privious,or next button */
+  /**boolean,disable privious,or next button */
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -160,7 +148,7 @@ export default function Dashboard() {
               Start a topic, revisit your own threads, or skim the live feed.
             </p>
           </div>
-{ /** css modules handel personlized greething      (render hero) */ }
+          {/** css modules handel personlized greething      (render hero) */}
           <div className={styles.searchColumn}>
             {/* <form className={styles.searchForm} onSubmit={handleSearch}>
               <input
@@ -172,17 +160,7 @@ export default function Dashboard() {
               <button type="submit" className={styles.searchButton}>
                 Search
               </button>
-<<<<<<<<< Temporary merge branch 1
-            </form> */}
-
-            <div className={styles.searchMode}>
-             
-              
-              
-            </div>
-=========
             </form>
-           {/**search input searchinput state,handel submit button */} 
             {/* <div className={styles.searchMode}>
               <button
                 type="button"
@@ -207,10 +185,9 @@ export default function Dashboard() {
                 Semantic
               </button>
             </div> */}
->>>>>>>>> Temporary merge branch 2
           </div>
         </div>
- {/**keyword,semantic button handleler on click updat or swich surchMode stat, current url not change till"submit button triger*/}
+        {/**keyword,semantic button handleler on click updat or swich surchMode stat, current url not change till"submit button triger*/}
         <div className={styles.heroCards}>
           <Link to="/questions/ask" className={styles.actionCard}>
             <div className={styles.cardIcon}>
@@ -240,7 +217,7 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
-{/**3 card link to othter page(debugging) (action card)*/}
+        {/**3 card link to othter page(debugging) (action card)*/}
         <div className={styles.stats}>
           <div>
             <small>Questions</small>
@@ -262,7 +239,7 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
-{/**showes 4 metrics,count howmany q desplaid */}
+      {/**showes 4 metrics,count howmany q desplaid */}
       <section className={styles.feed}>
         <div className={styles.feedHeader}>
           <div>
@@ -273,7 +250,7 @@ export default function Dashboard() {
             New Question
           </Link>
         </div>
-{/**feed header secondaru New question (feed section) */}
+        {/**feed header secondaru New question (feed section) */}
         {loading && (
           <div className={styles.loadingBox}>Loading recent questions...</div>
         )}
@@ -285,7 +262,7 @@ export default function Dashboard() {
             No questions found. Be the first to ask!
           </div>
         )}
-{/**codtional rendering if loading-show loading message, elif,error,/empty state */}
+        {/**codtional rendering if loading-show loading message, elif,error,/empty state */}
         {!loading &&
           !message &&
           questions.map((question) => (
@@ -332,7 +309,7 @@ export default function Dashboard() {
               </button>
             </div>
           ))}
-{/**privent bing trigerd befor click,call speek in the question title (pagination controll) */}
+        {/**privent bing trigerd befor click,call speek in the question title (pagination controll) */}
         {!loading && !message && questions.length > 0 && (
           <div className={styles.pagination}>
             <button
