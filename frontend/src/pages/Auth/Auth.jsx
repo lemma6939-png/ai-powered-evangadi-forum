@@ -1,10 +1,10 @@
 /**
  * Auth: combined login + register form; switches mode without changing routes.
+ * Voice-enabled: speak email, password, first/last name.
  */
-import { useState } from 'react';
-
-import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
+import {useState, useRef} from "react";
+import {motion as Motion, AnimatePresence} from "framer-motion";
+import {useNavigate, useLocation} from "react-router-dom";
 import {
   Sparkles,
   Code,
@@ -12,49 +12,144 @@ import {
   Eye,
   EyeOff,
   MessageSquare,
-} from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import styles from './Auth.module.css';
+} from "lucide-react";
+import {useAuth} from "../../contexts/AuthContext";
+import {
+  initSpeechToText,
+  startListening,
+  stopListening,
+} from "../../accessibility/speechToText";
+import {speak} from "../../accessibility/textToSpeech";
+import styles from "./Auth.module.css";
 
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { register, login } = useAuth();
+  const {register, login} = useAuth();
   const [isLogin, setIsLogin] = useState(true);
 
-  // Registration form state
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  // Error and loading state
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // Handle form submission for both login and registration
-  const handleSubmit = async e => {
+  // Voice recognition states & refs
+  const [isListeningEmail, setIsListeningEmail] = useState(false);
+  const [isListeningPassword, setIsListeningPassword] = useState(false);
+  const [isListeningFirstName, setIsListeningFirstName] = useState(false);
+  const [isListeningLastName, setIsListeningLastName] = useState(false);
+  const emailRecognitionRef = useRef(null);
+  const passwordRecognitionRef = useRef(null);
+  const firstNameRecognitionRef = useRef(null);
+  const lastNameRecognitionRef = useRef(null);
+
+  // Voice start functions
+  const startEmailVoice = () => {
+    if (isListeningEmail) {
+      stopListening();
+      setIsListeningEmail(false);
+      return;
+    }
+    if (!emailRecognitionRef.current) {
+      emailRecognitionRef.current = initSpeechToText(
+        (text) => {
+          setEmail(text);
+          setIsListeningEmail(false);
+          speak("Email filled");
+        },
+        () => speak("Could not hear you"),
+      );
+    }
+    startListening();
+    setIsListeningEmail(true);
+    speak("Please speak your email");
+  };
+
+  const startPasswordVoice = () => {
+    if (isListeningPassword) {
+      stopListening();
+      setIsListeningPassword(false);
+      return;
+    }
+    if (!passwordRecognitionRef.current) {
+      passwordRecognitionRef.current = initSpeechToText(
+        (text) => {
+          setPassword(text);
+          setIsListeningPassword(false);
+          speak("Password filled");
+        },
+        () => speak("Could not hear you"),
+      );
+    }
+    startListening();
+    setIsListeningPassword(true);
+    speak("Please speak your password");
+  };
+
+  const startFirstNameVoice = () => {
+    if (isListeningFirstName) {
+      stopListening();
+      setIsListeningFirstName(false);
+      return;
+    }
+    if (!firstNameRecognitionRef.current) {
+      firstNameRecognitionRef.current = initSpeechToText(
+        (text) => {
+          setFirstName(text);
+          setIsListeningFirstName(false);
+          speak("First name filled");
+        },
+        () => speak("Could not hear you"),
+      );
+    }
+    startListening();
+    setIsListeningFirstName(true);
+    speak("Please speak your first name");
+  };
+
+  const startLastNameVoice = () => {
+    if (isListeningLastName) {
+      stopListening();
+      setIsListeningLastName(false);
+      return;
+    }
+    if (!lastNameRecognitionRef.current) {
+      lastNameRecognitionRef.current = initSpeechToText(
+        (text) => {
+          setLastName(text);
+          setIsListeningLastName(false);
+          speak("Last name filled");
+        },
+        () => speak("Could not hear you"),
+      );
+    }
+    startListening();
+    setIsListeningLastName(true);
+    speak("Please speak your last name");
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
     const normalizedEmail = email.trim().toLowerCase();
-    // regex for email validation
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!normalizedEmail) {
-      setError('Email is required.');
+      setError("Email is required.");
       return;
     }
-
     if (!emailPattern.test(normalizedEmail)) {
-      setError('Please enter a valid email address.');
+      setError("Please enter a valid email address.");
       return;
     }
-
     if (!password.trim()) {
-      setError('Password is required.');
+      setError("Password is required.");
       return;
     }
 
@@ -63,23 +158,23 @@ export default function Auth() {
 
     if (!isLogin) {
       if (!trimmedFirstName) {
-        setError('First name is required.');
+        setError("First name is required.");
         return;
       }
       if (trimmedFirstName.length < 3) {
-        setError('First name must be at least 3 characters long.');
+        setError("First name must be at least 3 characters long.");
         return;
       }
       if (!trimmedLastName) {
-        setError('Last name is required.');
+        setError("Last name is required.");
         return;
       }
       if (trimmedLastName.length < 3) {
-        setError('Last name must be at least 3 characters long.');
+        setError("Last name must be at least 3 characters long.");
         return;
       }
       if (password.length < 6) {
-        setError('Password must be at least 6 characters long.');
+        setError("Password must be at least 6 characters long.");
         return;
       }
     }
@@ -88,29 +183,22 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        // Login flow
-        await login({ email: normalizedEmail, password });
-        setSuccessMessage('Sign-in successful. Redirecting...');
-        // Clear form fields
-        setEmail('');
-        setPassword('');
+        await login({email: normalizedEmail, password});
+        setSuccessMessage("Sign-in successful. Redirecting...");
+        setEmail("");
+        setPassword("");
         setShowPassword(false);
-        // Delay redirect to show successful message
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Check location state for original URL after login
-        // Redirect to original URL if present, otherwise dashboard
-        const from = location.state?.from?.pathname || '/dashboard';
-        navigate(from, { replace: true });
-        navigate(from, { replace: true });
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const from = location.state?.from?.pathname || "/dashboard";
+        navigate(from, {replace: true});
       } else {
-        // Registration flow
         await register({
           firstName: trimmedFirstName,
           lastName: trimmedLastName,
           email: normalizedEmail,
           password,
         });
+<<<<<<< HEAD
         //########################## the fifth comment
         // setSuccessMessage('Registration successful! Please log in.');
         // // Clear form fields
@@ -125,18 +213,28 @@ export default function Auth() {
         // }, 1500);
         setSuccessMessage("Registration successful. Redirecting...");
 
+=======
+        setSuccessMessage("Registration successful! Please log in.");
+>>>>>>> Fe24
         setFirstName("");
         setLastName("");
         setEmail("");
         setPassword("");
+<<<<<<< HEAD
         setShowPassword(false);
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         navigate("/dashboard", { replace: true });
+=======
+        setTimeout(() => {
+          setIsLogin(true);
+          setSuccessMessage(null);
+        }, 1500);
+>>>>>>> Fe24
       }
     } catch (err) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -144,20 +242,20 @@ export default function Auth() {
 
   return (
     <div className={styles.auth}>
-      {/* Left: Info Section */}
+      {/* Left: Info Section (unchanged) */}
       <section className={styles.auth__info}>
         <div className={styles.auth__infoContent}>
           <header className={styles.auth__infoHeader}>
             <div
               className={styles.auth__infoBranding}
-              onClick={() => navigate('/')}
-              title='Go to Home'
-              role='button'
+              onClick={() => navigate("/")}
+              title="Go to Home"
+              role="button"
               tabIndex={0}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  navigate('/');
+                  navigate("/");
                 }
               }}
             >
@@ -214,13 +312,13 @@ export default function Auth() {
           <div className={styles.auth__infoFooter}>
             <div className={styles.auth__infoFooterContent}>
               <div className={styles.auth__infoAvatars}>
-                {[1, 2, 3].map(i => (
+                {[1, 2, 3].map((i) => (
                   <img
                     key={i}
                     src={`https://picsum.photos/seed/${i + 50}/100/100`}
                     className={styles.auth__infoAvatar}
-                    alt='u'
-                    referrerPolicy='no-referrer'
+                    alt="u"
+                    referrerPolicy="no-referrer"
                   />
                 ))}
               </div>
@@ -232,25 +330,25 @@ export default function Auth() {
         </div>
       </section>
 
-      {/* Right: Auth Forms */}
+      {/* Right: Auth Forms with Voice */}
       <section className={styles.auth__formSection}>
         <div className={styles.auth__formContainer}>
-          <AnimatePresence mode='wait'>
+          <AnimatePresence mode="wait">
             <Motion.div
-              key={isLogin ? 'login' : 'register'}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              key={isLogin ? "login" : "register"}
+              initial={{opacity: 0, y: 10}}
+              animate={{opacity: 1, y: 0}}
+              exit={{opacity: 0, y: -10}}
+              transition={{duration: 0.2}}
             >
               <div className={styles.auth__formHeader}>
                 <h2 className={styles.auth__formTitle}>
-                  {isLogin ? 'Sign in to your account' : 'Create an account'}
+                  {isLogin ? "Sign in to your account" : "Create an account"}
                 </h2>
                 <p className={styles.auth__formSubtitle}>
                   {isLogin
-                    ? 'Enter your email address and password to continue.'
-                    : 'Complete the form below to create your account.'}
+                    ? "Enter your email address and password to continue."
+                    : "Complete the form below to create your account."}
                 </p>
               </div>
 
@@ -258,78 +356,141 @@ export default function Auth() {
                 {!isLogin && (
                   <>
                     <div className={styles.auth__inputGroup}>
-                      <label htmlFor='firstName' className={styles.auth__label}>
+                      <label htmlFor="firstName" className={styles.auth__label}>
                         First Name
                       </label>
-                      <input
-                        id='firstName'
-                        type='text'
-                        placeholder='First name'
-                        className={styles.auth__input}
-                        value={firstName}
-                        onChange={e => setFirstName(e.target.value)}
-                      />
+                      <div style={{display: "flex", gap: "8px"}}>
+                        <input
+                          id="firstName"
+                          type="text"
+                          placeholder="First name"
+                          className={styles.auth__input}
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          onClick={startFirstNameVoice}
+                          style={{
+                            backgroundColor: "#0066FF",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            padding: "0 12px",
+                          }}
+                        >
+                          {isListeningFirstName ? "⏹" : "🎤"}
+                        </button>
+                      </div>
                     </div>
 
                     <div className={styles.auth__inputGroup}>
-                      <label htmlFor='lastName' className={styles.auth__label}>
+                      <label htmlFor="lastName" className={styles.auth__label}>
                         Last Name
                       </label>
-                      <input
-                        id='lastName'
-                        type='text'
-                        placeholder='Last name'
-                        className={styles.auth__input}
-                        value={lastName}
-                        onChange={e => setLastName(e.target.value)}
-                      />
+                      <div style={{display: "flex", gap: "8px"}}>
+                        <input
+                          id="lastName"
+                          type="text"
+                          placeholder="Last name"
+                          className={styles.auth__input}
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          onClick={startLastNameVoice}
+                          style={{
+                            backgroundColor: "#0066FF",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            padding: "0 12px",
+                          }}
+                        >
+                          {isListeningLastName ? "⏹" : "🎤"}
+                        </button>
+                      </div>
                     </div>
                   </>
                 )}
 
                 <div className={styles.auth__inputGroup}>
-                  <label htmlFor='email' className={styles.auth__label}>
+                  <label htmlFor="email" className={styles.auth__label}>
                     Email Address
                   </label>
-                  <input
-                    id='email'
-                    type='email'
-                    placeholder='Enter your email address'
-                    className={styles.auth__input}
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                  />
+                  <div style={{display: "flex", gap: "8px"}}>
+                    <input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email address"
+                      className={styles.auth__input}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={startEmailVoice}
+                      style={{
+                        backgroundColor: "#0066FF",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        padding: "0 12px",
+                      }}
+                    >
+                      {isListeningEmail ? "⏹" : "🎤"}
+                    </button>
+                  </div>
                 </div>
 
                 <div className={styles.auth__inputGroup}>
                   <div className={styles.auth__labelRow}>
-                    <label htmlFor='password' className={styles.auth__label}>
+                    <label htmlFor="password" className={styles.auth__label}>
                       Password
                     </label>
                   </div>
-                  <div className={styles.auth__passwordWrap}>
-                    <input
-                      id='password'
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder='••••••••'
-                      className={`${styles.auth__input} ${styles.auth__inputPassword}`}
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                    />
-                    <button
-                      type='button'
-                      className={styles.auth__passwordToggle}
-                      onClick={() => setShowPassword(v => !v)}
-                      aria-label={
-                        showPassword ? 'Hide password' : 'Show password'
-                      }
-                      aria-pressed={showPassword}
+                  <div style={{display: "flex", gap: "8px"}}>
+                    <div
+                      className={styles.auth__passwordWrap}
+                      style={{flex: 1}}
                     >
-                      {showPassword ? (
-                        <EyeOff size={18} aria-hidden />
-                      ) : (
-                        <Eye size={18} aria-hidden />
-                      )}
+                      <input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className={`${styles.auth__input} ${styles.auth__inputPassword}`}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className={styles.auth__passwordToggle}
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                        aria-pressed={showPassword}
+                      >
+                        {showPassword ? (
+                          <EyeOff size={18} aria-hidden />
+                        ) : (
+                          <Eye size={18} aria-hidden />
+                        )}
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={startPasswordVoice}
+                      style={{
+                        backgroundColor: "#0066FF",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        padding: "0 12px",
+                      }}
+                    >
+                      {isListeningPassword ? "⏹" : "🎤"}
                     </button>
                   </div>
                 </div>
@@ -337,20 +498,19 @@ export default function Auth() {
                 {successMessage && (
                   <div className={styles.auth__success}>{successMessage}</div>
                 )}
-
                 {error && <div className={styles.auth__error}>{error}</div>}
 
                 <div className={styles.auth__buttonContainer}>
                   <button
-                    type='submit'
-                    className={`${styles.auth__button} ${styles['auth__button--primary']}`}
+                    type="submit"
+                    className={`${styles.auth__button} ${styles["auth__button--primary"]}`}
                     disabled={loading}
                   >
                     {loading
-                      ? 'Processing...'
+                      ? "Processing..."
                       : isLogin
-                      ? 'Sign In'
-                      : 'Create Account'}
+                        ? "Sign In"
+                        : "Create Account"}
                     {!loading && (
                       <ArrowRight
                         size={16}
@@ -374,12 +534,12 @@ export default function Auth() {
                 <p className={styles.auth__formFooterText}>
                   {isLogin
                     ? "Don't have an account?"
-                    : 'Already have an account?'}
+                    : "Already have an account?"}
                   <button
                     onClick={() => setIsLogin(!isLogin)}
                     className={styles.auth__formFooterLink}
                   >
-                    {isLogin ? 'Create an account' : 'Back to sign in'}
+                    {isLogin ? "Create an account" : "Back to sign in"}
                   </button>
                 </p>
               </footer>
@@ -390,3 +550,384 @@ export default function Auth() {
     </div>
   );
 }
+
+// /**
+//  * Auth: combined login + register form; switches mode without changing routes.
+//  */
+// import { useState } from 'react';
+
+// import { motion as Motion, AnimatePresence } from 'framer-motion';
+// import { useNavigate, useLocation } from 'react-router-dom';
+// import {
+//   Sparkles,
+//   Code,
+//   ArrowRight,
+//   Eye,
+//   EyeOff,
+//   MessageSquare,
+// } from 'lucide-react';
+// import { useAuth } from '../../contexts/AuthContext';
+// import styles from './Auth.module.css';
+
+// export default function Auth() {
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const { register, login } = useAuth();
+//   const [isLogin, setIsLogin] = useState(true);
+
+//   // Registration form state
+//   const [firstName, setFirstName] = useState('');
+//   const [lastName, setLastName] = useState('');
+//   const [email, setEmail] = useState('');
+//   const [password, setPassword] = useState('');
+//   const [showPassword, setShowPassword] = useState(false);
+
+//   // Error and loading state
+//   const [error, setError] = useState(null);
+//   const [loading, setLoading] = useState(false);
+//   const [successMessage, setSuccessMessage] = useState(null);
+
+//   // Handle form submission for both login and registration
+//   const handleSubmit = async e => {
+//     e.preventDefault();
+//     setError(null);
+//     setSuccessMessage(null);
+//     const normalizedEmail = email.trim().toLowerCase();
+//     // regex for email validation
+//     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+//     if (!normalizedEmail) {
+//       setError('Email is required.');
+//       return;
+//     }
+
+//     if (!emailPattern.test(normalizedEmail)) {
+//       setError('Please enter a valid email address.');
+//       return;
+//     }
+
+//     if (!password.trim()) {
+//       setError('Password is required.');
+//       return;
+//     }
+
+//     const trimmedFirstName = firstName.trim();
+//     const trimmedLastName = lastName.trim();
+
+//     if (!isLogin) {
+//       if (!trimmedFirstName) {
+//         setError('First name is required.');
+//         return;
+//       }
+//       if (trimmedFirstName.length < 3) {
+//         setError('First name must be at least 3 characters long.');
+//         return;
+//       }
+//       if (!trimmedLastName) {
+//         setError('Last name is required.');
+//         return;
+//       }
+//       if (trimmedLastName.length < 3) {
+//         setError('Last name must be at least 3 characters long.');
+//         return;
+//       }
+//       if (password.length < 6) {
+//         setError('Password must be at least 6 characters long.');
+//         return;
+//       }
+//     }
+
+//     setLoading(true);
+
+//     try {
+//       if (isLogin) {
+//         // Login flow
+//         await login({ email: normalizedEmail, password });
+//         setSuccessMessage('Sign-in successful. Redirecting...');
+//         // Clear form fields
+//         setEmail('');
+//         setPassword('');
+//         setShowPassword(false);
+//         // Delay redirect to show successful message
+//         await new Promise(resolve => setTimeout(resolve, 1000));
+
+//         // Check location state for original URL after login
+//         // Redirect to original URL if present, otherwise dashboard
+//         const from = location.state?.from?.pathname || '/dashboard';
+//         navigate(from, { replace: true });
+//         navigate(from, { replace: true });
+//       } else {
+//         // Registration flow
+//         await register({
+//           firstName: trimmedFirstName,
+//           lastName: trimmedLastName,
+//           email: normalizedEmail,
+//           password,
+//         });
+//         setSuccessMessage('Registration successful! Please log in.');
+//         // Clear form fields
+//         setFirstName('');
+//         setLastName('');
+//         setEmail('');
+//         setPassword('');
+//         // Automatically switch to login form after 1.5 seconds
+//         setTimeout(() => {
+//           setIsLogin(true);
+//           setSuccessMessage(null);
+//         }, 1500);
+//       }
+//     } catch (err) {
+//       setError(err.message || 'An unexpected error occurred.');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className={styles.auth}>
+//       {/* Left: Info Section */}
+//       <section className={styles.auth__info}>
+//         <div className={styles.auth__infoContent}>
+//           <header className={styles.auth__infoHeader}>
+//             <div
+//               className={styles.auth__infoBranding}
+//               onClick={() => navigate('/')}
+//               title='Go to Home'
+//               role='button'
+//               tabIndex={0}
+//               onKeyDown={e => {
+//                 if (e.key === 'Enter' || e.key === ' ') {
+//                   e.preventDefault();
+//                   navigate('/');
+//                 }
+//               }}
+//             >
+//               <div className={styles.auth__infoLogo} aria-hidden>
+//                 <MessageSquare
+//                   className={styles.auth__infoLogoIcon}
+//                   size={22}
+//                 />
+//               </div>
+//               <div className={styles.auth__infoBrandCopy}>
+//                 <p className={styles.auth__infoTitle}>Evangadi Forum</p>
+//                 <p className={styles.auth__infoTagline}>
+//                   Learn together. Ask with context.
+//                 </p>
+//               </div>
+//             </div>
+//             <p className={styles.auth__infoDescription}>
+//               Sign in to post technical questions, follow threads, and search
+//               the forum with both keyword and AI similarity modes, built for
+//               Evangadi coursework and peer review.
+//             </p>
+//           </header>
+
+//           <div className={styles.auth__features}>
+//             <div className={styles.auth__feature}>
+//               <div className={styles.auth__featureIcon}>
+//                 <Sparkles size={20} />
+//               </div>
+//               <div className={styles.auth__featureContent}>
+//                 <h3 className={styles.auth__featureTitle}>Visible reasoning</h3>
+//                 <p className={styles.auth__featureDescription}>
+//                   Threads stay readable: markdown, code blocks, and replies
+//                   build a mini knowledge base your cohort can revisit before
+//                   exams.
+//                 </p>
+//               </div>
+//             </div>
+//             <div className={styles.auth__feature}>
+//               <div className={styles.auth__featureIcon}>
+//                 <Code size={20} />
+//               </div>
+//               <div className={styles.auth__featureContent}>
+//                 <h3 className={styles.auth__featureTitle}>
+//                   Low-friction workflow
+//                 </h3>
+//                 <p className={styles.auth__featureDescription}>
+//                   One layout for asking, answering, and scanning search results,
+//                   so you spend energy on the problem, not on hunting controls.
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className={styles.auth__infoFooter}>
+//             <div className={styles.auth__infoFooterContent}>
+//               <div className={styles.auth__infoAvatars}>
+//                 {[1, 2, 3].map(i => (
+//                   <img
+//                     key={i}
+//                     src={`https://picsum.photos/seed/${i + 50}/100/100`}
+//                     className={styles.auth__infoAvatar}
+//                     alt='u'
+//                     referrerPolicy='no-referrer'
+//                   />
+//                 ))}
+//               </div>
+//               <span className={styles.auth__infoBadge}>
+//                 Evangadi cohorts · weekly stand-ups · office-hour style help
+//               </span>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Right: Auth Forms */}
+//       <section className={styles.auth__formSection}>
+//         <div className={styles.auth__formContainer}>
+//           <AnimatePresence mode='wait'>
+//             <Motion.div
+//               key={isLogin ? 'login' : 'register'}
+//               initial={{ opacity: 0, y: 10 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               exit={{ opacity: 0, y: -10 }}
+//               transition={{ duration: 0.2 }}
+//             >
+//               <div className={styles.auth__formHeader}>
+//                 <h2 className={styles.auth__formTitle}>
+//                   {isLogin ? 'Sign in to your account' : 'Create an account'}
+//                 </h2>
+//                 <p className={styles.auth__formSubtitle}>
+//                   {isLogin
+//                     ? 'Enter your email address and password to continue.'
+//                     : 'Complete the form below to create your account.'}
+//                 </p>
+//               </div>
+
+//               <form className={styles.auth__form} onSubmit={handleSubmit}>
+//                 {!isLogin && (
+//                   <>
+//                     <div className={styles.auth__inputGroup}>
+//                       <label htmlFor='firstName' className={styles.auth__label}>
+//                         First Name
+//                       </label>
+//                       <input
+//                         id='firstName'
+//                         type='text'
+//                         placeholder='First name'
+//                         className={styles.auth__input}
+//                         value={firstName}
+//                         onChange={e => setFirstName(e.target.value)}
+//                       />
+//                     </div>
+
+//                     <div className={styles.auth__inputGroup}>
+//                       <label htmlFor='lastName' className={styles.auth__label}>
+//                         Last Name
+//                       </label>
+//                       <input
+//                         id='lastName'
+//                         type='text'
+//                         placeholder='Last name'
+//                         className={styles.auth__input}
+//                         value={lastName}
+//                         onChange={e => setLastName(e.target.value)}
+//                       />
+//                     </div>
+//                   </>
+//                 )}
+
+//                 <div className={styles.auth__inputGroup}>
+//                   <label htmlFor='email' className={styles.auth__label}>
+//                     Email Address
+//                   </label>
+//                   <input
+//                     id='email'
+//                     type='email'
+//                     placeholder='Enter your email address'
+//                     className={styles.auth__input}
+//                     value={email}
+//                     onChange={e => setEmail(e.target.value)}
+//                   />
+//                 </div>
+
+//                 <div className={styles.auth__inputGroup}>
+//                   <div className={styles.auth__labelRow}>
+//                     <label htmlFor='password' className={styles.auth__label}>
+//                       Password
+//                     </label>
+//                   </div>
+//                   <div className={styles.auth__passwordWrap}>
+//                     <input
+//                       id='password'
+//                       type={showPassword ? 'text' : 'password'}
+//                       placeholder='••••••••'
+//                       className={`${styles.auth__input} ${styles.auth__inputPassword}`}
+//                       value={password}
+//                       onChange={e => setPassword(e.target.value)}
+//                     />
+//                     <button
+//                       type='button'
+//                       className={styles.auth__passwordToggle}
+//                       onClick={() => setShowPassword(v => !v)}
+//                       aria-label={
+//                         showPassword ? 'Hide password' : 'Show password'
+//                       }
+//                       aria-pressed={showPassword}
+//                     >
+//                       {showPassword ? (
+//                         <EyeOff size={18} aria-hidden />
+//                       ) : (
+//                         <Eye size={18} aria-hidden />
+//                       )}
+//                     </button>
+//                   </div>
+//                 </div>
+
+//                 {successMessage && (
+//                   <div className={styles.auth__success}>{successMessage}</div>
+//                 )}
+
+//                 {error && <div className={styles.auth__error}>{error}</div>}
+
+//                 <div className={styles.auth__buttonContainer}>
+//                   <button
+//                     type='submit'
+//                     className={`${styles.auth__button} ${styles['auth__button--primary']}`}
+//                     disabled={loading}
+//                   >
+//                     {loading
+//                       ? 'Processing...'
+//                       : isLogin
+//                       ? 'Sign In'
+//                       : 'Create Account'}
+//                     {!loading && (
+//                       <ArrowRight
+//                         size={16}
+//                         className={styles.auth__buttonIcon}
+//                       />
+//                     )}
+//                   </button>
+//                 </div>
+
+//                 <div className={styles.auth__divider}>
+//                   <div className={styles.auth__dividerLine}>
+//                     <div className={styles.auth__dividerBorder}></div>
+//                   </div>
+//                   <div className={styles.auth__dividerText}>
+//                     Additional options
+//                   </div>
+//                 </div>
+//               </form>
+
+//               <footer className={styles.auth__formFooter}>
+//                 <p className={styles.auth__formFooterText}>
+//                   {isLogin
+//                     ? "Don't have an account?"
+//                     : 'Already have an account?'}
+//                   <button
+//                     onClick={() => setIsLogin(!isLogin)}
+//                     className={styles.auth__formFooterLink}
+//                   >
+//                     {isLogin ? 'Create an account' : 'Back to sign in'}
+//                   </button>
+//                 </p>
+//               </footer>
+//             </Motion.div>
+//           </AnimatePresence>
+//         </div>
+//       </section>
+//     </div>
+//   );
+// }

@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
+/* react hooks ,run code after compent display/stord ques,load,error*/
 import { Link } from "react-router-dom";
+<<<<<<< HEAD
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
+=======
+/**with out refreshing pages changing smoothly */
+>>>>>>> Fe24
 import { getMyQuestions } from "../../services/question/question.service";
+/**calls the bacend api,eg get/api/qu/me */
 import styles from "./MyQuestions.module.css";
 
 export default function MyQuestions() {
@@ -24,7 +30,7 @@ export default function MyQuestions() {
       setLoading(false);
     }
   };
-
+/**creat page user see/stor all ques,err messg,track data is loading from server */
   useEffect(() => {
     loadMyQuestions();
   }, []);
@@ -61,7 +67,7 @@ export default function MyQuestions() {
             sidebar to start.
           </div>
         )}
-
+{/**load once,empty array,return,page container,heading,title,desc,new ques link to ask ques, */}
         {!loading &&
           !message &&
           questions.map((question) => (
@@ -91,3 +97,7 @@ export default function MyQuestions() {
     </div>
   );
 }
+<<<<<<< HEAD
+=======
+/**map loop through every ques,db/quesHash-to identify eachRow impruv performanc */
+>>>>>>> Fe24
